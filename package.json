@@ -1,14 +1,14 @@
 {
   "name": "n8n-nodes-auvoapi",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.1.4",
+  "description": "Custom n8n node for Auvo API",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/eusoubrasileiro/n8n-nodes-auvoapi",
   "author": {
-    "name": "imbr",
+    "name": "iambr",
     "email": "eusoubrasileiro@gmail.com"
   },
   "repository": {
@@ -48,13 +48,11 @@
     "eslint-plugin-n8n-nodes-base": "^1.16.1",
     "gulp": "^4.0.2",
     "prettier": "^3.3.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "sqlite3": "^5.1.7"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
   },
-  "dependencies": {
-    "n8n-nodes-auvoapi": "link:",
-    "sqlite3": "^5.1.7"
-  }
+  "dependencies": {}
 }
