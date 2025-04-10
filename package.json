@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-auvoapi",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "Custom n8n node for Auvo API",
   "keywords": [
     "n8n-community-node-package"
@@ -36,7 +36,7 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/AuvoCredentialsApi.credentials.js"
+      "dist/credentials/auvoCredentialsApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/AuvoNode/AuvoNode.node.js"
