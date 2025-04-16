@@ -35,12 +35,14 @@ export class AuvoNode implements INodeType {
 				required: true,
 				options: [
 					{ name: 'Retrieve', value: 'retrieve' },
-					// { name: 'Create', value: 'create' },
+					{ name: 'Create', value: 'create' },
+					{ name: 'Create or Update', value: 'upsert' },
 					// { name: 'Update', value: 'update' },
 					// { name: 'Delete', value: 'delete' },
 				],
 				default: 'retrieve',
 			},
+			// Retrive Parameters
 			{
 				displayName: 'paramFilter',
 				name: 'paramFilter',
@@ -52,8 +54,8 @@ export class AuvoNode implements INodeType {
 						operation: ['retrieve'],
 					},
 				},
-				placeholder: "{ id: 14836218}",
-				description: "Filters like internal id, others ...",
+				placeholder: "{ id: 14836218 }",
+				description: "Filters like internal id, others like name, email, etc",
 			},
 			{
 				displayName: 'Page',
@@ -65,7 +67,7 @@ export class AuvoNode implements INodeType {
 						operation: ['retrieve'],
 					},
 				},
-				description: "Page of the selection. Default 1.",
+				description: "Page of the selection",
 			},
 			{
 				displayName: 'PageSize',
@@ -77,7 +79,7 @@ export class AuvoNode implements INodeType {
 						operation: ['retrieve'],
 					},
 				},
-				description: "Amount of records of the selection. Default 10.",
+				description: "Amount of records of the selection",
 			},
 			{
 				displayName: 'Order',
@@ -89,23 +91,55 @@ export class AuvoNode implements INodeType {
 						operation: ['retrieve'],
 					},
 				},
-				description: "Order of the selection. Default asc.",
+				description: "Order of the selection asc. for ascending or desc. for descending",
 			},
+			// Create Parameters
 			{
-				noDataExpression: true,
+				displayName: 'Attributes',
+				name: 'attributes',
+				type: 'string',
+				required: true,
+				default: '',
+				placeholder: "{ externalId: '1234567890', name: 'John Doe', active: 'true' }",
+				displayOptions: {
+					show: {
+						operation: ['create', 'upsert'],
+					},
+				},
+				description: "Attributes of the entity to create or update.\nRefer to the API documentation for the entity to know the attributes",
+			},
+			// Entities
+			{
 				displayName: 'Entity',
+				noDataExpression: true,
 				name: 'entity',
 				type: 'options',
 				required: true,
 				default: 'customers',
 				options: [
 					{
+						name: 'Customer Groups',
+						value: 'customerGroups',
+					},
+					{
 						name: 'Customers',
 						value: 'customers',
 					},
 					{
-						name: 'Webhooks',
-						value: 'webHooks',
+						name: 'GPS',
+						value: 'gps',
+					},
+					{
+						name: 'Products',
+						value: 'products',
+					},
+					{
+						name: 'Segments',
+						value: 'segments',
+					},
+					{
+						name: 'Task Types',
+						value: 'taskTypes',
 					},
 					{
 						name: 'Tasks',
@@ -116,16 +150,20 @@ export class AuvoNode implements INodeType {
 						value: 'teams',
 					},
 					{
-						name: 'Products',
-						value: 'products',
+						name: 'Users',
+						value: 'users',
+					},
+					{
+						name: 'Webhooks',
+						value: 'webHooks',
 					},
 				],
 				displayOptions: {
 					show: {
-						operation: ['retrieve'],
+						operation: ['retrieve', 'create', 'upsert'],
 					},
 				},
-				description: "Entity to retrieve like Customers, webHooks, etc.",
+				description: "Entity to perform operation",
 			},
 		],
 	};
@@ -158,7 +196,8 @@ export class AuvoNode implements INodeType {
 				},
 			}
 		);
-
+		const entity = this.getNodeParameter('entity', 0, '') as string;
+		const attributes = this.getNodeParameter('attributes', 0, '') as string;
 		const accessToken = loginRes.result.accessToken;
 
 		if (!accessToken) {
@@ -167,7 +206,6 @@ export class AuvoNode implements INodeType {
 
 		switch (operation) {
 			case 'retrieve':
-				const entity = this.getNodeParameter('entity', 0, '') as string;
 				console.log(`entity: ${entity}`);
 				const paramFilter = encodeURIComponent(this.getNodeParameter('paramFilter', 0, '') as string);
 				// from api docs for entity webHooks
@@ -190,6 +228,38 @@ export class AuvoNode implements INodeType {
 							Authorization: `Bearer ${accessToken}`,
 							'Content-Type': 'application/json',
 						},
+					}
+				);
+				break;
+			case 'create':
+			// from api docs for entity customers
+			// https://auvoapiv2.docs.apiary.io/#reference/customers/customer/add-a-new-customer
+				response = await this.helpers.httpRequest(
+					{
+						baseURL: credentials.auvoApiUrl,
+						url: `${entity}/`,
+						method: 'POST',
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+							'Content-Type': 'application/json',
+						},
+						body: attributes,
+					}
+				);
+				break;
+			case 'upsert':
+				// from api docs for entity customers
+				// https://auvoapiv2.docs.apiary.io/#reference/customers/customer/upsert-add-a-new-customer-or-update-an-existing-one
+				response = await this.helpers.httpRequest(
+					{
+						baseURL: credentials.auvoApiUrl,
+						url: `${entity}/`,
+						method: 'PUT',
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+							'Content-Type': 'application/json',
+						},
+						body: attributes,
 					}
 				);
 				break;
