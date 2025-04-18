@@ -9,14 +9,14 @@ import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 export class AuvoNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Auvo Node',
+		displayName: 'Auvo',
 		name: 'auvoNode',
 		group: ['transform'],
 		icon: 'file:auvo.svg',
 		version: 1,
-		description: 'Basic Auvo Node',
+		description: 'Auvo API',
 		defaults: {
-			name: 'Auvo Node',
+			name: 'Auvo',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
