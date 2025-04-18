@@ -24,6 +24,7 @@ nvm alias default 20
 # Optional: Try installing globally (may work depending on environment)
 pnpm add -g sqlite3
 pnpm add -g n8n
+pnpm approve-builds # 
 ```
 
 ### 3. Setup Custom Node Environment
@@ -54,7 +55,7 @@ pnpm link /full/path/to/your-node-project
 
 ### 5. Running n8n and Fixing SQLite Issues 
 
-#### Option A: Local install (preferred if global fails)
+#### Option A: custom folder install (preferred if global fails)
 
 On the custom node folder
 
@@ -95,3 +96,25 @@ n8n start
 
 4. Restart the n8n stack/service.
 
+
+>### ~~Testing issues~~ 
+> 
+~~`pnpm run test`~~
+> ~~For tests, somehow the building scripts (that are prompt to fail and sometimes try to guess things) 
+don't see that package (module) `workflow-n8n` uses 'dist' and not 'src' folder inside the `node_modules` folder. 
+That's why I included the bellow on the `tsconfig.json` to force it read at correct dist path.~~
+~~`"paths": {
+      "n8n-workflow": ["./node_modules/n8n-workflow/dist"]
+    },
+`~~
+~~
+
+### Notes
+
+**Dammit!!**
+**Not according to n8n starter node settings** (package.json and tsconfig.json) 
+- 1. package.json
+  - Don't use `tsup`! Use `tsc` compiler
+  - Never set `"type": "module"`
+- 2. tsconfig.json
+  - Don't use `ts-node` config
