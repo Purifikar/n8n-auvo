@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import type {
+	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
@@ -45,7 +46,7 @@ export class AuvoNode implements INodeType {
 			{
 				displayName: 'paramFilter',
 				name: 'paramFilter',
-				type: 'string',
+				type: 'json',
 				required: true,
 				default: '',
 				displayOptions: {
@@ -54,7 +55,7 @@ export class AuvoNode implements INodeType {
 					},
 				},
 				placeholder: "{ id: 14836218 }",
-				description: "Filters like internal id, others like name, email, etc",
+				description: "JSON object to filter by attributes like active, id, name, creationDate, email, etc. \nRefer to the API documentation for the entity to know the attributes. \nFor Tasks: it's mandatory to set startDate and endDate",
 			},
 			{
 				displayName: 'Page',
@@ -156,7 +157,8 @@ export class AuvoNode implements INodeType {
 					},
 					{
 						name: 'Tasks',
-						value: 'tasks', // tasks must set start-date and end-date
+						value: 'tasks', // tasks must set startDate and endDate
+						description: "Must set startDate and endDate",
 					},
 					{
 						name: 'Teams',
@@ -167,7 +169,7 @@ export class AuvoNode implements INodeType {
 						value: 'users',
 					},
 					{
-						name: 'Webhooks',
+						name: 'WebHooks',
 						value: 'webHooks',
 					},
 				],
@@ -213,7 +215,7 @@ export class AuvoNode implements INodeType {
 		// Get parameters
 		const entity = this.getNodeParameter('entity', 0, '') as string;
 		const attributes = this.getNodeParameter('attributes', 0, '') as string;
-		const paramFilter = this.getNodeParameter('paramFilter', 0, '') as string;
+		const paramFilter = this.getNodeParameter('paramFilter', 0, '') as IDataObject;
 		const id = this.getNodeParameter('id', 0, '') as string;
 		if (!accessToken) {
 			throw new NodeOperationError(this.getNode(), `Failed to retrieve accessToken from Auvo. ${loginRes.data}`);
@@ -221,7 +223,6 @@ export class AuvoNode implements INodeType {
 
 		switch (operation) {
 			case 'retrieve':
-				console.log(`entity: ${entity}`);
 				// from api docs for entity webHooks
 				// curl --include \
 				//    --header "Content-Type: application/json" \
@@ -232,7 +233,7 @@ export class AuvoNode implements INodeType {
 						baseURL: credentials.auvoApiUrl,
 						url: `${entity}/`,
 						qs: { // query params
-							paramFilter: encodeURIComponent(paramFilter),
+							paramFilter: JSON.stringify(paramFilter),
 							page: this.getNodeParameter('page', 0, 1) as number,
 							pageSize: this.getNodeParameter('pageSize', 0, 10) as number,
 							order: this.getNodeParameter('order', 0, 'asc') as string,
