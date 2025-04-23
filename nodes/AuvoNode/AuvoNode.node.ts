@@ -37,8 +37,7 @@ export class AuvoNode implements INodeType {
 					{ name: 'Retrieve', value: 'retrieve' },
 					{ name: 'Create', value: 'create' },
 					{ name: 'Create or Update', value: 'upsert' },
-					// { name: 'Update', value: 'update' },
-					// { name: 'Delete', value: 'delete' },
+					{ name: 'Delete', value: 'delete' },
 				],
 				default: 'retrieve',
 			},
@@ -97,7 +96,7 @@ export class AuvoNode implements INodeType {
 			{
 				displayName: 'Attributes',
 				name: 'attributes',
-				type: 'string',
+				type: 'json',
 				required: true,
 				default: '',
 				placeholder: "{ externalId: '1234567890', name: 'John Doe', active: 'true' }",
@@ -107,6 +106,20 @@ export class AuvoNode implements INodeType {
 					},
 				},
 				description: "Attributes of the entity to create or update.\nRefer to the API documentation for the entity to know the attributes",
+			},
+			// Delete Parameters
+			{
+				displayName: 'ID',
+				name: 'id',
+				type: 'string',
+				required: true,
+				default: '',
+				displayOptions: {
+					show: {
+						operation: ['delete'],
+					},
+				},
+				description: "ID of the entity to delete",
 			},
 			// Entities
 			{
@@ -143,7 +156,7 @@ export class AuvoNode implements INodeType {
 					},
 					{
 						name: 'Tasks',
-						value: 'tasks', // tasksing must set start-date and end-date
+						value: 'tasks', // tasks must set start-date and end-date
 					},
 					{
 						name: 'Teams',
@@ -160,7 +173,7 @@ export class AuvoNode implements INodeType {
 				],
 				displayOptions: {
 					show: {
-						operation: ['retrieve', 'create', 'upsert'],
+						operation: ['retrieve', 'create', 'upsert', 'delete'],
 					},
 				},
 				description: "Entity to perform operation",
@@ -201,7 +214,7 @@ export class AuvoNode implements INodeType {
 		const entity = this.getNodeParameter('entity', 0, '') as string;
 		const attributes = this.getNodeParameter('attributes', 0, '') as string;
 		const paramFilter = this.getNodeParameter('paramFilter', 0, '') as string;
-
+		const id = this.getNodeParameter('id', 0, '') as string;
 		if (!accessToken) {
 			throw new NodeOperationError(this.getNode(), `Failed to retrieve accessToken from Auvo. ${loginRes.data}`);
 		}
@@ -264,11 +277,26 @@ export class AuvoNode implements INodeType {
 					}
 				);
 				break;
+			case 'delete':
+				// from api docs for entity customers
+				// https://auvoapiv2.docs.apiary.io/#reference/customers/customer/delete-a-customer
+				response = await this.helpers.httpRequest(
+					{
+						baseURL: credentials.auvoApiUrl,
+						url: `${entity}/${id}`,
+						method: 'DELETE',
+						headers: {
+								Authorization: `Bearer ${accessToken}`,
+								'Content-Type': 'application/json',
+							},
+					}
+				);
+				break;
 			default:
 				throw new NodeOperationError(this.getNode(), 'Invalid operation.');
 		}
 
-		return [this.helpers.returnJsonArray(response)];
+		return [this.helpers.returnJsonArray({status: response.status, data: response.result})];
 
 	}
 }
