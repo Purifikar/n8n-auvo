@@ -1,6 +1,5 @@
 /// <reference lib="dom" />
 import type {
-	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
@@ -48,7 +47,7 @@ export class AuvoNode implements INodeType {
 				name: 'paramFilter',
 				type: 'json',
 				required: true,
-				default: '',
+				default: {},
 				displayOptions: {
 					show: {
 						operation: ['retrieve'],
@@ -214,8 +213,16 @@ export class AuvoNode implements INodeType {
 		const accessToken = loginRes.result.accessToken;
 		// Get parameters
 		const entity = this.getNodeParameter('entity', 0, '') as string;
-		const attributes = this.getNodeParameter('attributes', 0, '') as string;
-		const paramFilter = this.getNodeParameter('paramFilter', 0, '') as IDataObject;
+		var attributes = this.getNodeParameter('attributes', 0, {});
+		var paramFilter = this.getNodeParameter('paramFilter', 0, {});
+		// convert from string to json if it's a string
+		// foolproof for user input
+		if (typeof paramFilter === 'string') {
+			paramFilter = JSON.parse(paramFilter);
+		}
+		if (typeof attributes === 'string') {
+			attributes = JSON.parse(attributes);
+		}
 		const id = this.getNodeParameter('id', 0, '') as string;
 		if (!accessToken) {
 			throw new NodeOperationError(this.getNode(), `Failed to retrieve accessToken from Auvo. ${loginRes.data}`);
