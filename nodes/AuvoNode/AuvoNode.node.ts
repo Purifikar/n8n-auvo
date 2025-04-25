@@ -45,9 +45,9 @@ export class AuvoNode implements INodeType {
 			{
 				displayName: 'paramFilter',
 				name: 'paramFilter',
-				type: 'json',
+				type: 'string',
 				required: true,
-				default: {},
+				default: '',
 				displayOptions: {
 					show: {
 						operation: ['retrieve'],
@@ -96,7 +96,7 @@ export class AuvoNode implements INodeType {
 			{
 				displayName: 'Attributes',
 				name: 'attributes',
-				type: 'json',
+				type: 'string',
 				required: true,
 				default: '',
 				placeholder: "{ externalId: '1234567890', name: 'John Doe', active: 'true' }",

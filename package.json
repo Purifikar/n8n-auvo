@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-auvoapi",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Custom n8n node for Auvo API",
   "keywords": [
     "n8n-community-node-package"
