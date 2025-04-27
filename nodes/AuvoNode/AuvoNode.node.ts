@@ -247,7 +247,7 @@ export class AuvoNode implements INodeType {
 						baseURL: credentials.auvoApiUrl,
 						url: `${entity}/`,
 						qs: { // query params
-							paramFilter: JSON.stringify(paramFilter),
+							paramFilter: encodeURIComponent(JSON.stringify(paramFilter)),
 							page: this.getNodeParameter('page', 0, 1) as number,
 							pageSize: this.getNodeParameter('pageSize', 0, 10) as number,
 							order: this.getNodeParameter('order', 0, 'asc') as string,
