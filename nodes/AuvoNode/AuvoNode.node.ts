@@ -1,6 +1,8 @@
 /// <reference lib="dom" />
 import type {
+	IDataObject,
 	IExecuteFunctions,
+	INode,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
@@ -45,7 +47,7 @@ export class AuvoNode implements INodeType {
 			{
 				displayName: 'paramFilter',
 				name: 'paramFilter',
-				type: 'string',
+				type: 'json',
 				required: true,
 				default: '',
 				displayOptions: {
@@ -96,7 +98,7 @@ export class AuvoNode implements INodeType {
 			{
 				displayName: 'Attributes',
 				name: 'attributes',
-				type: 'string',
+				type: 'json',
 				required: true,
 				default: '',
 				placeholder: "{ externalId: '1234567890', name: 'John Doe', active: 'true' }",
@@ -190,6 +192,15 @@ export class AuvoNode implements INodeType {
 		let operation = this.getNodeParameter('operation', 0);
 		let response = null;
 
+		async function safeParse(value: unknown, field: string, node: INode): Promise<IDataObject> {
+			if (typeof value !== 'string' && !(value instanceof String)) return value as IDataObject;
+			try {
+				return JSON.parse(value as string);
+			} catch {
+				throw new NodeOperationError(node, `${field} is not valid JSON`);
+			}
+	}
+
 		const credentials = await this.getCredentials('auvoCredentialsApi') as {
 			apiKey: string;
 			apiToken: string;
@@ -211,22 +222,18 @@ export class AuvoNode implements INodeType {
 			}
 		);
 		const accessToken = loginRes.result.accessToken;
+		if (!accessToken) {
+			throw new NodeOperationError(this.getNode(), `Failed to retrieve accessToken from Auvo. ${loginRes.data}`);
+		}
 		// Get parameters
 		const entity = this.getNodeParameter('entity', 0, '') as string;
+		const id = this.getNodeParameter('id', 0, '') as string;
 		var attributes = this.getNodeParameter('attributes', 0, {});
 		var paramFilter = this.getNodeParameter('paramFilter', 0, {});
 		// convert from string to json if it's a string
 		// foolproof for user input
-		if (typeof paramFilter === 'string') {
-			paramFilter = JSON.parse(paramFilter);
-		}
-		if (typeof attributes === 'string') {
-			attributes = JSON.parse(attributes);
-		}
-		const id = this.getNodeParameter('id', 0, '') as string;
-		if (!accessToken) {
-			throw new NodeOperationError(this.getNode(), `Failed to retrieve accessToken from Auvo. ${loginRes.data}`);
-		}
+		paramFilter = await safeParse(paramFilter, 'paramFilter', this.getNode());
+		attributes = await safeParse(attributes, 'attributes', this.getNode());
 
 		switch (operation) {
 			case 'retrieve':
