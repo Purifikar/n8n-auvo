@@ -244,8 +244,7 @@ export class AuvoNode implements INodeType {
 				// 'https://api.auvo.com.br/v2/webHooks/?paramFilter={paramFilter}&page={page}&pageSize={pageSize}&order={order}'
 				response = await this.helpers.httpRequest(
 					{
-						baseURL: credentials.auvoApiUrl,
-						url: `${entity}/`,
+						url: `${credentials.auvoApiUrl}/${entity}`,
 						qs: { // query params
 							paramFilter: encodeURIComponent(JSON.stringify(paramFilter)),
 							page: this.getNodeParameter('page', 0, 1) as number,
@@ -257,6 +256,8 @@ export class AuvoNode implements INodeType {
 							Authorization: `Bearer ${accessToken}`,
 							'Content-Type': 'application/json',
 						},
+						ignoreHttpStatusErrors: true,
+						returnFullResponse: true //returnFullResponse gives you the status code without pulling in the circular parts of Axios’ response
 					}
 				);
 				break;
@@ -265,14 +266,15 @@ export class AuvoNode implements INodeType {
 			// https://auvoapiv2.docs.apiary.io/#reference/customers/customer/add-a-new-customer
 				response = await this.helpers.httpRequest(
 					{
-						baseURL: credentials.auvoApiUrl,
-						url: `${entity}/`,
+						url: `${credentials.auvoApiUrl}/${entity}`,
 						method: 'POST',
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
 							'Content-Type': 'application/json',
 						},
 						body: attributes,
+						ignoreHttpStatusErrors: true,
+						returnFullResponse: true //returnFullResponse gives you the status code without pulling in the circular parts of Axios’ response
 					}
 				);
 				break;
@@ -281,14 +283,15 @@ export class AuvoNode implements INodeType {
 				// https://auvoapiv2.docs.apiary.io/#reference/customers/customer/upsert-add-a-new-customer-or-update-an-existing-one
 				response = await this.helpers.httpRequest(
 					{
-						baseURL: credentials.auvoApiUrl,
-						url: `${entity}/`,
+						url: `${credentials.auvoApiUrl}/${entity}`,
 						method: 'PUT',
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
 							'Content-Type': 'application/json',
 						},
 						body: attributes,
+						ignoreHttpStatusErrors: true,
+						returnFullResponse: true //returnFullResponse gives you the status code without pulling in the circular parts of Axios’ response
 					}
 				);
 				break;
@@ -297,13 +300,14 @@ export class AuvoNode implements INodeType {
 				// https://auvoapiv2.docs.apiary.io/#reference/customers/customer/delete-a-customer
 				response = await this.helpers.httpRequest(
 					{
-						baseURL: credentials.auvoApiUrl,
-						url: `${entity}/${id}`,
+						url: `${credentials.auvoApiUrl}/${entity}/${id}`,
 						method: 'DELETE',
 						headers: {
 								Authorization: `Bearer ${accessToken}`,
 								'Content-Type': 'application/json',
-							},
+						},
+						ignoreHttpStatusErrors: true,
+						returnFullResponse: true //returnFullResponse gives you the status code without pulling in the circular parts of Axios’ response
 					}
 				);
 				break;
@@ -311,7 +315,13 @@ export class AuvoNode implements INodeType {
 				throw new NodeOperationError(this.getNode(), 'Invalid operation.');
 		}
 
-		return [this.helpers.returnJsonArray({status: response.status, data: response.result})];
+		const output = {
+			success: response.statusCode >= 200 && response.statusCode < 300,
+			status : response.statusCode,
+			data   : response.body,
+		};
+
+		return [this.helpers.returnJsonArray(output)];
 
 	}
 }
